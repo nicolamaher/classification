@@ -102,6 +102,65 @@ def preprocess_from_dict(dict_, path, verbose = True):
     
     return result
 
+
+def reshape_feature2(x, crop=26, firstmon =6, no_months=2, verbose=False):
+    '''
+    reshape the feature to start and finish at specify month
+    and crop for years with labels
+    input:
+        - x = input data
+        - crop = number of years removed to make start point equal to where labelling begins
+        - first_mon = month want to start in e.g. 10 = October
+        - no_months - how many months to include in analysis
+    output:
+        - cropped data
+        - it is in year x months for each input dataset
+    example
+        data_reshape, _=reshape_feature(data,crop= 46,verbose=True)
+        data_reshape = [reshape_feature(x) for x in data]
+    
+    '''
+    residual_month = np.mod(x.shape[0],12)
+    if residual_month >=3:
+        full_size=int(np.ceil(float(x.shape[0])/12)*12)
+        x2=np.zeros(full_size)
+        x2[0:len(x)]=x
+    elif residual_month != 0:
+        x2=x[:-residual_month]
+    elif residual_month == 0 :
+        x2=x
+    
+    x2_move_month=x2[firstmon-1:firstmon-13]    
+    x_reshaped = x2_move_month.reshape((-1,12))
+    x_crop = x_reshaped[crop:,:-no_months]
+    
+    if verbose: 
+        print ("cropped data size:", x_crop.shape)
+        print ("residual month:", residual_month)
+        
+    return x_crop
+
+def preprocess_from_dict2(dict_, path, verbose = True):
+    '''
+    input:
+        - dict_:
+    '''
+    result ={}
+        
+    for key, value in dict_.items():
+        
+        filename  = value['filename']
+        x = prepare_data(path, filename )
+        crop = value['crop']
+        firstmon = value['firstmon']
+        reshaped = reshape_feature2(x, crop=crop, firstmon=firstmon, verbose=verbose)
+        
+        result[key]=reshaped
+    
+    return result
+
+
+
 # Concatenate 
 def concat_features(result, keys, axis=0):
     '''
@@ -276,7 +335,7 @@ def number_events(event_name,pred,data):
     return no_events
 
 
-def create_data_struct(path,features,firstmon = 10,crop =0, file_id='1950'):
+def create_data_struct(path,features,firstmon = 6,crop =0, file_id='1950'):
     '''
     Create a dictionary of file name for the large ensemble so we can dont have to do it manually, this gives me the directory with first feature first second second and so on
     input :

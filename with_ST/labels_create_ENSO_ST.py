@@ -105,7 +105,7 @@ def create_labels():
     #GECCO2 1948 start 52
     GEC=aa[52:52+68]
     #OISST 09/1981 start 85
-    OI=aa[85:85+38]
+    OI=aa[86:86+38]
     #ORAs4 1958 start 62
     OR4=aa[62:62+59]
     #ORAs5 1979 start 83
